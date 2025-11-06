@@ -7,7 +7,7 @@ const agendamentoSchema = new mongoose.Schema({
     tipoAgendamento: {type: String, required: true},
     atendimentosComplementares: {type: [String], default: []},
     data: {type: Date, required: true},
-    status: {type: String, required: true, enum: ['Incompleto', 'Completo'], default: 'Incompleto'}
+    status: {type: String, required: true, enum: ['Incompleto', 'Completo', 'Enviado'], default: 'Incompleto'}
 })
 
 export default mongoose.model('Appointment', agendamentoSchema);
