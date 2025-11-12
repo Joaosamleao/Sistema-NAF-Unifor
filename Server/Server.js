@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import AgendamentoRoutes from './Routes/AgendamentoRoutes.js';
+import ReceitaFederalRoutes from './Routes/ReceitaFederalRoutes.js'
 import { connectDB } from './Config/Database.js';
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/api/agendamentos', AgendamentoRoutes);
+app.use('/api/receita', ReceitaFederalRoutes);
 
 app.use((req, res) => {
     res.status(404).json({

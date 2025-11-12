@@ -2,12 +2,41 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, X, ArrowLeft, PlusCircle } from 'lucide-react';
 
 const tiposDeAgendamento = [
+    'Auxílio à elaboração e orientações sobre a Declaração de Ajuste Anual do IRPF',
+    'Auxílio à inscrição e Informações cadastrais de CPF',
+    'Auxílio à inscrição e Informações cadastrais do CNPJ',
+    'Auxílio à emissão e informações sobre Certidões Negativas de Débitos PF e PJ',
+    'Auxílio à consulta à situação fiscal',
+    'Agendamento on-line de atendimentos na RFB',
+    'Informações e auxílio à regularização de CPF Suspenso',
+    'Informações e auxílio à elaboração de pedido de isenção de IRPF para portadores de moléstias graves',
+    'Orientações e auxílio à elaboração de pedidos de isenção de IPI/IOF na compra de veículos por portadores de deficiência física, mental ou visual',
+    'Auxílio à apresentação de pedidos de restituição de pagamentos indevidos e/ou a maior (Perdcomps)',
+    'Informações gerais sobre ITR',
+    'Auxílio à inscrição e Informações gerais sobre o Microempreendedor Individual',
+    'Auxílio à inscrição e Informações gerais sobre o Simples Nacional',
     'Auxílio à inscrição e informações cadastrais da matrícula CEI',
-    'Declaração de Imposto de Renda (DIRPF)',
-    'Consulta de Situação Fiscal',
-    'Emissão de DARF/DAS',
-    'Outro',
+    'Informações e auxílio no eSocial do empregador doméstico',
+    'Auxílio à emissão e informações sobre guias para o recolhimento da contribuição previdenciária de Produtores Rurais Pessoa Física, Segurado Especial, Contribuinte Individual e obras de pessoas físicas',
+    'Orientações e auxílio ao cumprimento de obrigações tributárias acessórias para associações e demais entidades sem fins lucrativos',
+    'Informações e auxilio para a obtenção de Certificado Digital',
+    'Informações e auxilio para realizar a opção pelo Domicílio Tributário Eletrônico - DTE',
+    'Auxílio à habilitação nos sistemas RADAR e Siscomex',
+    'Informações sobre regras de importação e exportação através dos Correios',
+    'Informações sobre Regras de Bagagem',
+    'Auxílio à inscrição e informações cadastrais da Carteira de Identidade Nacional (CIN)'
 ];
+
+const MODALIDADE_OPCOES = ['Presencial', 'Remoto'];
+const TIPO_DE_PESSOA_OPCOES = [
+    'Pessoa Física', 
+    'Microempreendedor Individual', 
+    'Pequenos Proprietários Rurais', 
+    'Mulheres em situação de risco e vulnerabilidade conforme Programa Mulher Cidadã, Portaria MF 26/2023', 
+    'Entidade sem fins lucrativos', 
+    'Outra'
+];
+
 
 function formatarData(isoString) {
     if (!isoString) return 'N/A';
@@ -26,6 +55,9 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
     const [email, setEmail] = useState('');
     const [tipoAgendamento, setTipoAgendamento] = useState('');
     const [data, setData] = useState('');
+    const [modalidade, setModalidade] = useState('Presencial');
+    const [tipoDePessoa, setTipoDePessoa] = useState('Pessoa Física');
+    const [telefone, setTelefone] = useState('');
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -51,6 +83,9 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
         email,
         tipoAgendamento,
         data,
+        modalidade,
+        tipoDePessoa,
+        telefone,
         };
 
         try {
@@ -83,6 +118,9 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
         setEmail('');
         setTipoAgendamento('');
         setData('');
+        setModalidade('Presencial');
+        setTipoDePessoa('Pessoa Física');
+        setTelefone('');
         setError(null);
         setIsSubmitting(false);
         onClose();
@@ -92,9 +130,9 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
     const focusInputClass = "focus:outline-none focus:ring-0 focus:border-blue-500 focus:rounded-none";
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <h2 className="text-xl font-semibold text-gray-900">Novo Agendamento</h2>
             <button
                 type="button"
@@ -106,9 +144,8 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
             </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="max-h-[70vh] overflow-y-auto">
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nome */}
                 <div>
                 <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
                     Nome
@@ -124,7 +161,6 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
                 />
                 </div>
 
-                {/* CPF */}
                 <div>
                 <label htmlFor="cpf" className="block text-sm font-medium text-gray-700">
                     CPF
@@ -140,7 +176,6 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
                 />
                 </div>
 
-                {/* Email */}
                 <div className="md:col-span-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email
@@ -155,8 +190,69 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
                     required
                 />
                 </div>
+                
+                <div>
+                <label htmlFor="telefone" className="block text-sm font-medium text-gray-700">
+                    Telefone (Opcional)
+                </label>
+                <input
+                    type="tel"
+                    id="telefone"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    className={`${inputClass} rounded-lg ${focusInputClass}`}
+                    placeholder="(85) 99999-9999"
+                />
+                </div>
+                
+                <div>
+                <label htmlFor="data" className="block text-sm font-medium text-gray-700">
+                    Data do Agendamento
+                </label>
+                <input
+                    type="date"
+                    id="data"
+                    value={data}
+                    onChange={(e) => setData(e.target.value)}
+                    className={`${inputClass} rounded-lg ${focusInputClass}`}
+                    required
+                />
+                </div>
+                
+                <div className="md:col-span-2">
+                <label htmlFor="tipoDePessoa" className="block text-sm font-medium text-gray-700">
+                    Tipo de Pessoa
+                </label>
+                <select
+                    id="tipoDePessoa"
+                    value={tipoDePessoa}
+                    onChange={(e) => setTipoDePessoa(e.target.value)}
+                    className={`${inputClass} rounded-lg ${focusInputClass}`}
+                    required
+                >
+                    {TIPO_DE_PESSOA_OPCOES.map((tipo) => (
+                    <option key={tipo} value={tipo}>{tipo}</option>
+                    ))}
+                </select>
+                </div>
+                
+                <div className="md:col-span-2">
+                <label htmlFor="modalidade" className="block text-sm font-medium text-gray-700">
+                    Modalidade
+                </label>
+                <select
+                    id="modalidade"
+                    value={modalidade}
+                    onChange={(e) => setModalidade(e.target.value)}
+                    className={`${inputClass} rounded-lg ${focusInputClass}`}
+                    required
+                >
+                    {MODALIDADE_OPCOES.map((mod) => (
+                    <option key={mod} value={mod}>{mod}</option>
+                    ))}
+                </select>
+                </div>
 
-                {/* Tipo de Agendamento */}
                 <div className="md:col-span-2">
                 <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">
                     Tipo de Agendamento
@@ -175,21 +271,6 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
                 </select>
                 </div>
 
-                {/* Data do Agendamento */}
-                <div>
-                <label htmlFor="data" className="block text-sm font-medium text-gray-700">
-                    Data do Agendamento
-                </label>
-                <input
-                    type="date"
-                    id="data"
-                    value={data}
-                    onChange={(e) => setData(e.target.value)}
-                    className={`${inputClass} rounded-lg ${focusInputClass}`}
-                    required
-                />
-                </div>
-
                 {error && (
                 <div className="md:col-span-2 text-center text-sm text-red-600">
                     {error}
@@ -197,7 +278,7 @@ function NovoAgendamentoModal({ isOpen, onClose, onAgendamentoCriado }) {
                 )}
             </div>
 
-            <div className="flex items-center justify-end gap-4 p-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <div className="flex items-center justify-end gap-4 p-4 bg-gray-50 border-t border-gray-200 rounded-b-lg sticky bottom-0 z-10">
                 <button
                 type="button"
                 onClick={handleClose}
@@ -287,6 +368,9 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
     };
 
     const handleConcluir = async () => {
+        const foiConclusivo = window.confirm("O atendimento foi conclusivo?\n\nClique 'OK' para 'Sim'\nClique 'Cancelar' para 'Não'");
+        const statusConclusivo = foiConclusivo ? 'Sim' : 'Não';
+        
         setIsCompleting(true);
         try {
         const response = await fetch(`/api/agendamentos/atualizar/${agendamento._id}`, {
@@ -294,7 +378,10 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
             headers: {
             'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ status: 'Completo' }),
+            body: JSON.stringify({ 
+            status: 'Completo',
+            foiConclusivo: statusConclusivo
+            }),
         });
 
         if (!response.ok) {
@@ -310,6 +397,7 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
         }
     };
 
+
     const InfoItem = ({ label, value }) => (
         <div>
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">{label}</h3>
@@ -319,7 +407,6 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
 
     return (
         <div className="py-8">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
             <button
             onClick={onVoltar}
@@ -339,27 +426,25 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
             </button>
         </div>
 
-        {/* Card Principal */}
         <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
-            {/* Grid de Informações */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <InfoItem label="Nome Completo" value={agendamento.nome} />
             <InfoItem label="CPF" value={agendamento.cpf} />
             <InfoItem label="Endereço de Email" value={agendamento.email} />
             
             <InfoItem label="Número de Telefone" value={agendamento.telefone} />
-            <InfoItem label="Instituição de Atendimento" value={agendamento.instituicao} />
-            <InfoItem label="Estado" value={agendamento.estado} />
+            <InfoItem label="Instituição de Atendimento" value={'CE - UNIFOR - Fortaleza'} />
+            <InfoItem label="Estado" value={'Ceará - CE'} />
             
             <div className="md:col-span-2">
                 <InfoItem label="Tipo de Atendimento" value={agendamento.tipoAgendamento} />
             </div>
 
             <InfoItem label="Modalidade do Atendimento" value={agendamento.modalidade} />
+            <InfoItem label="Tipo de Pessoa" value={agendamento.tipoDePessoa} />
             <InfoItem label="Data do Agendamento" value={formatarData(agendamento.data)} />
             </div>
 
-            {/* Atendimento Complementar */}
             <div className="mt-8 pt-6 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Atendimentos Complementares</h3>
             
@@ -398,7 +483,6 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
             </div>
         </div>
         
-        {/* Botões Inferiores */}
         <div className="flex justify-end mt-6">
             <button
             type="button"
@@ -412,6 +496,7 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
         </div>
     );
 }
+
 
 function Agendamentos() {
     const [isModalOpen, setIsModalOpen] = useState(false);
