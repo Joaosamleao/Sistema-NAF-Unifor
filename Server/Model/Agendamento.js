@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const agendamentoSchema = new mongoose.Schema({
     nome: {type: String, required: true},
-    cpf: {type: String, required: true, minlenght: 11, maxlength: 11},
+    cpf: {type: String, required: true, minlength: 11, maxlength: 11},
     email: {type: String, required: true},
     telefone: {type: String, required: false},
     tipoAgendamento: {type: String, required: true},
@@ -14,4 +14,4 @@ const agendamentoSchema = new mongoose.Schema({
     tipoDePessoa: {type: String, required: true, enum: ['Pessoa Física', 'Microempreendedor Individual', 'Pequenos Proprietários Rurais', 'Mulheres em situação de risco e vulnerabilidade conforme Programa Mulher Cidadã, Portaria MF 26/2023', 'Entidade sem fins lucrativos', 'Outra']}
 })
 
-export default mongoose.model('Appointment', agendamentoSchema);
+export default mongoose.model('Agendamento', agendamentoSchema);

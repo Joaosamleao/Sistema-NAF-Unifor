@@ -2,13 +2,13 @@ import { Bell } from 'lucide-react';
 import logo from '../assets/naf-logo.png';
 
     function Logo() {
-    return (
-        <img
-        className="h-17 w-17 object-contain"
-        src={logo}
-        alt="NAF Unifor Logo"
-        />
-    );
+        return (
+            <img
+                className="h-17 w-17 object-contain"
+                src={logo}
+                alt="NAF Unifor Logo"
+            />
+        );
     }
 
 function Navbar({ activeLink, setActiveLink }) {
@@ -61,12 +61,15 @@ function Navbar({ activeLink, setActiveLink }) {
                 <span className="sr-only">View notifications</span>
                 <Bell className="h-6 w-6" aria-hidden="true" />
                 </button>
-                
+
                 <img
                 className="h-9 w-9 rounded-full object-cover"
                 src="https://placehold.co/36x36/E0E0E0/B0B0B0?text=A"
                 alt="User profile"
                 />
+
+                <button onClick={() => setActiveLink && setActiveLink('Entrar')} className="text-sm text-gray-700 ml-4">Entrar</button>
+                <button onClick={() => setActiveLink && setActiveLink('Criar conta')} className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm">Criar conta</button>
             </div>
             </div>
         </div>

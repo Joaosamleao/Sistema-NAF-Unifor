@@ -22,7 +22,9 @@ function ReceitaFederal() {
         setIsLoading(true);
         setError(null);
         try {
-        const response = await fetch('/api/agendamentos/listarCompletos'); 
+        const token = localStorage.getItem('naf_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch('/api/agendamentos/listarCompletos', { headers }); 
         if (!response.ok) {
             throw new Error('Falha ao buscar atendimentos finalizados');
         }
@@ -51,8 +53,11 @@ function ReceitaFederal() {
         setIsEnviando(true);
 
         try {
+        const token = localStorage.getItem('naf_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
         const response = await fetch('/api/receita/enviarReceita', {
             method: 'POST',
+            headers,
         });
 
         if (!response.ok) {

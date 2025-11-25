@@ -31,7 +31,7 @@ export const obterAgendamento = async(req, res) => {
     try {
         const agendamento = await Agendamento.findById(req.params.id);
         if (!agendamento) {
-            return res.status(404).json({message: error.message});
+            return res.status(404).json({message: 'Agendamento não encontrado'});
         }
         res.status(200).json(agendamento);
     } catch (error) {
