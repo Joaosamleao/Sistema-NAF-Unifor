@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import logo from '../assets/naf-logo.png'; 
+import sideImage from '../assets/user.png';
 
 export default function Register({ setActiveLink }) {
   const [nome, setNome] = useState('')
@@ -49,7 +51,7 @@ export default function Register({ setActiveLink }) {
               onClick={() => setActiveLink('Entrar')}
               className="bg-blue-600 text-white px-8 py-2 rounded-md"
             >
-              Sair
+              Voltar para o Login
             </button>
           </div>
         </div>
@@ -92,15 +94,17 @@ export default function Register({ setActiveLink }) {
 
           <div className="text-center mt-4 text-sm text-gray-700">
             Já possui uma conta?{' '}
-            <button onClick={()=>setActiveLink('Entrar')} className="text-blue-600 underline">Entre aqui</button>
+            <button onClick={() => setActiveLink('Entrar')} className="font-medium text-[#265BCD] hover:text-blue-500">Entre aqui</button>
           </div>
         </div>
       </div>
 
-      <div className="w-1/2 bg-white flex items-center justify-center">
-        <div className="w-64 h-64 border rounded flex items-center justify-center text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M8 14l2-2 3 3 4-4"></path></svg>
-        </div>
+      <div className="hidden relative w-0 flex-1 lg:block">
+        <img
+          className="absolute inset-0 h-full w-full object-cover"
+          src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" 
+          alt="Ambiente de trabalho"
+        />
       </div>
     </div>
   )

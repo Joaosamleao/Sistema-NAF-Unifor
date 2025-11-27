@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import logo from '../assets/naf-logo.png';
 
-export default function Login({ setActiveLink }) {
+export default function Login({ setActiveLink, setUserRole }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [loading, setLoading] = useState(false)
@@ -10,6 +11,7 @@ export default function Login({ setActiveLink }) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -23,18 +25,26 @@ export default function Login({ setActiveLink }) {
       }
 
       const data = await res.json()
-      if (data.token) {
-        localStorage.setItem('naf_token', data.token)
+
+      if (res.ok && data.token) {
+        localStorage.setItem('naf_token', data.token);
+        localStorage.setItem('user_cargo', data.cargo);
+
+        const payload = JSON.parse(atob(data.token.split('.')[1]));
+        localStorage.setItem('user_id', payload.id);
+
+        if (typeof setUserRole === 'function') setUserRole(data.cargo);
+
         setActiveLink('Dashboard')
       } else {
-        throw new Error('Resposta inválida do servidor')
+        setError(data.message || 'Erro ao entrar');
       }
     } catch (err) {
-      setError(err.message)
+      setError('Erro de conexão com o servidor');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-stretch">
@@ -79,15 +89,15 @@ export default function Login({ setActiveLink }) {
             </button>
           </form>
 
-          <div className="text-center mt-4 text-sm text-gray-700">
+          <p className="mt-10 text-center text-sm text-gray-500">
             Não possui uma conta?{' '}
             <button
               onClick={() => setActiveLink('Criar conta')}
-              className="text-blue-600 underline"
+              className="font-semibold leading-6 text-[#265BCD] hover:text-blue-500"
             >
-              Crie uma
+              Crie aqui
             </button>
-          </div>
+          </p>
         </div>
       </div>
 

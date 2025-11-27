@@ -507,38 +507,51 @@ function DetalhesAgendamento({ agendamento, onVoltar, onAtendimentoAdicionado, o
 }
 
 
-function Agendamentos() {
+function Agendamentos({ userRole }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAgendamento, setSelectedAgendamento] = useState(null);
+    const podeCriarOuEditar = ['Administrador', 'Monitor'].includes(userRole);
 
     const [agendamentos, setAgendamentos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchAgendamentos = useCallback(async () => {
+    const fetchAgendamentos = useCallback(async (status) => {
+        setIsLoading(true);
         setError(null);
         try {
-        const token = localStorage.getItem('naf_token'); 
-        
-        const headers = token ? { 
-            'Authorization': `Bearer ${token}`, // CHAVE: Enviar o token aqui!
-            'Content-Type': 'application/json' 
-        } : { 
-            'Content-Type': 'application/json' 
-        };
+            const token = localStorage.getItem('naf_token');
 
-        const response = await fetch('/api/agendamentos/listarIncompletos', { headers });
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                // formato padrão JWT: Authorization: Bearer <token>
+                headers['Authorization'] = `Bearer ${token}`;
+            } else {
+                // se não houver token
+                setIsLoading(false);
+                setError("Erro: Token de autenticação não encontrado. Faça o login novamente.");
+                return;
+            }
+
+            const response = await fetch('/api/agendamentos/listarIncompletos', {
+                headers: headers
+            });
 
             if (response.status === 401) {
                 throw new Error('Sessão expirada. Faça login novamente.');
             }
 
             if (!response.ok) {
-                throw new Error('Falha ao buscar dados dos agendamentos');
+                const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido do servidor.' }));
+                // se for 401/403 pode ser token expirado/cargo incorreto
+                throw new Error(errorData.message || `Falha ao buscar agendamentos: ${response.statusText}`);
             }
             const data = await response.json();
             setAgendamentos(data);
         } catch (err) {
+            console.error("Erro ao buscar agendamentos:", err);
             setError(err.message);
         } finally {
             setIsLoading(false);
@@ -642,13 +655,15 @@ function Agendamentos() {
                                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-[#265BCD] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm"
-                        >
-                            Novo agendamento
-                        </button>
+                        {podeCriarOuEditar && (
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-150"
+                            >
+                                <PlusCircle size={20} />
+                                <span>Novo Agendamento</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -694,14 +709,18 @@ function Agendamentos() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {formatarData(agendamento.data)}
                                     </td>
-
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => setSelectedAgendamento(agendamento)}
-                                            className="text-[#265BCD] hover:text-blue-700"
-                                        >
-                                            Detalhes
-                                        </button>
+                                        {podeCriarOuEditar && (
+                                            <button
+                                                onClick={() => setSelectedAgendamento(agendamento)}
+                                                className="text-[#265BCD] hover:text-blue-700"
+                                            >
+                                                Detalhes/Editar
+                                            </button>
+                                        )}
+                                        {!podeCriarOuEditar && userRole === 'Leitor' && (
+                                            <span className="text-gray-400">Ver Detalhes</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

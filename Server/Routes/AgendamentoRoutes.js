@@ -1,4 +1,5 @@
 import express from 'express';
+import { checkRole } from '../Middleware/authorization.js';
 
 import {
     listarAgendamentos,
@@ -12,13 +13,14 @@ import {
 
 const router = express.Router();
 
-router.get('/listar', listarAgendamentos);
-router.get('/listarIncompletos', listarAgendamentosI);
-router.get('/listarCompletos', listarAgendamentosC);
-router.get('/object/:id', obterAgendamento);
-router.post('/criar', criarAgendamento);
-router.put('/atualizar/:id', atualizarAgendamento);
-router.delete('/excluir/:id', deletarAgendamento);
+router.get('/listar', checkRole(['Administrador', 'Monitor', 'Leitor']), listarAgendamentos);
+router.get('/listarIncompletos', checkRole(['Administrador', 'Monitor', 'Leitor']), listarAgendamentosI);
+router.get('/listarCompletos', checkRole(['Administrador', 'Monitor', 'Leitor']), listarAgendamentosC);
+router.get('/object/:id', checkRole(['Administrador', 'Monitor', 'Leitor']), obterAgendamento);
+
+router.post('/criar', checkRole(['Administrador', 'Monitor']), criarAgendamento);
+router.put('/atualizar/:id', checkRole(['Administrador', 'Monitor']), atualizarAgendamento);
+router.delete('/excluir/:id', checkRole(['Administrador', 'Monitor']), deletarAgendamento);
 
 router.use((req, res) => {
     res.status(404).json({

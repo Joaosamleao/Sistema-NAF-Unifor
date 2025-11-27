@@ -1,10 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authMiddleware from './Middleware/auth.js';
+import roleMiddleware from './Middleware/role.js';
 import AgendamentoRoutes from './Routes/AgendamentoRoutes.js';
 import ReceitaFederalRoutes from './Routes/ReceitaFederalRoutes.js'
 import AuthRoutes from './Routes/AuthRoutes.js';
-import authMiddleware from './Middleware/auth.js';
+import ColaboradorRoutes from './Routes/ColaboradorRoutes.js'; 
 import { connectDB } from './Config/Database.js';
 
 dotenv.config();
@@ -20,8 +22,9 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', AuthRoutes);
 
-app.use('/api/agendamentos', authMiddleware, AgendamentoRoutes);
-app.use('/api/receita', authMiddleware, ReceitaFederalRoutes);
+app.use('/api/agendamentos', authMiddleware, roleMiddleware(['Administrador', 'Monitor', 'Leitor']), AgendamentoRoutes); 
+app.use('/api/receita', authMiddleware, roleMiddleware(['Administrador']), ReceitaFederalRoutes);
+app.use('/api/colaboradores', authMiddleware, roleMiddleware(['Administrador']), ColaboradorRoutes);
 
 app.use((req, res) => {
     res.status(404).json({

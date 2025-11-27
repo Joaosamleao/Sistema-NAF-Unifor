@@ -7,11 +7,11 @@ const colaboradorSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     telefone: { type: String },
     senha: { type: String, required: true },
-    cargo: { type: String, enum: ['Administrador', 'Monitor', 'Leitor'], default: 'Leitor' },
+    cargo: { type: String, required: true, enum: ['Administrador', 'Monitor', 'Leitor', 'Aguardando'], default: 'Aguardando'},
+    ativo: { type: Boolean, required: true, default: false },
     dataEntrada: { type: Date, default: Date.now },
 });
 
-// Hook: HASH da senha ANTES de salvar o colaborador (Segurança!)
 colaboradorSchema.pre('save', async function(next) {
     if (this.isModified('senha')) {
         this.senha = await bcrypt.hash(this.senha, 10);
@@ -19,5 +19,4 @@ colaboradorSchema.pre('save', async function(next) {
     next();
 });
 
-// Usar o nome exato da coleção no banco de dados: 'colaboradores'
 export default mongoose.model('Colaborador', colaboradorSchema, 'colaboradores');
