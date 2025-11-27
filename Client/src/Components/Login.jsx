@@ -49,9 +49,9 @@ export default function Login({ setActiveLink, setUserRole }) {
   return (
     <div className="min-h-screen flex items-stretch bg-gray-50">
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="max-w-md w-full px-6 card-soft fade-in">
+        <div className="max-w-md w-full px-8 card-soft fade-in">
           <div className="text-center mb-6">
-            <img src={logo} alt="NAF" className="mx-auto h-14 w-14 mb-4" />
+            <img src={logo} alt="NAF" className="mx-auto h-14 w-14 mb-4 mt-4" />
             <h1 className="text-2xl font-bold">Entre na sua conta</h1>
             <p className="text-sm text-gray-600">Coloque seu email para ter acesso a sua conta</p>
           </div>
@@ -92,7 +92,7 @@ export default function Login({ setActiveLink, setUserRole }) {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-5 mb-4 text-center text-sm text-gray-500">
             Não possui uma conta?{' '}
             <button
               onClick={() => setActiveLink('Criar conta')}

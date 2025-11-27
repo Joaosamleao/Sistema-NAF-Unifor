@@ -662,7 +662,7 @@ function Agendamentos({ userRole }) {
                         {podeCriarOuEditar && (
                             <button
                                 onClick={() => setIsModalOpen(true)}
-                                className="flex items-center space-x-2 bg-[#265BCD] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm disabled:opacity-50"
+                                className="flex items-center space-x-2 disabled:cursor-not-allowed btn-animate primary-gradient font-semibold py-2 px-4 rounded-lg text-sm disabled:opacity-50"
                             >
                                 <PlusCircle size={20} />
                                 <span>Novo Agendamento</span>

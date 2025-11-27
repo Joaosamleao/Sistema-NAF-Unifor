@@ -284,7 +284,7 @@ function ReceitaFederal() {
                         type="button"
                         onClick={handleEnviarTudo}
                         disabled={isEnviando || agendamentosCompletos.length === 0}
-                        className="py-2 px-4 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed btn-animate primary-gradient"
+                        className="py-2 px-4 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed btn-animate primary-gradient"
                     >
                         {isEnviando ? 'Enviando...' : `Enviar ${totalEnvios} para a Receita`}
                     </button>

@@ -32,7 +32,7 @@ function Navbar({ activeLink, setActiveLink, userRole }) {
     };
 
     return (
-        <nav className="bg-gradient-to-l from-white/80 via-sky-100 to-white/80 dark:from-sky-900/70 dark:via-sky-800/60 border-b border-sky-200 backdrop-blur-sm">
+        <nav className="bg-gradient-to-l from-white/80 via-blue-100 to-white/80 dark:from-blue-100/70 dark:via-blue-600/60 border-b border-blue-200 backdrop-blur-sm">
             <div className="px-4 sm:px-6 lg:px-8">
                 <div className="flex h-20 items-center justify-between">
 
