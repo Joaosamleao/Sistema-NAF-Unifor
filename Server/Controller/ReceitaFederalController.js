@@ -10,7 +10,7 @@ function formatarDataParaFormsMS(isoString) {
     return `${ano}-${mes}-${dia}`;
 }
 
-function mapearAgendamentoParaPayload(agendamento, tipoServico) {
+function mapearAgendamentoParaPayload(agendamento, servicoTexto) {
     const questionIds = {
         estado: "r63c60f2b1d534444a895a58c1e4e7997",
         instituicao: "r72abccf1b2934fb9a3d60ec421345dde",
@@ -21,17 +21,32 @@ function mapearAgendamentoParaPayload(agendamento, tipoServico) {
         tipoAtendimento: "r55ccbdea62044b4790ae6de8ca02273f"
     };
 
+    let dataFormatada = null;
+    if (agendamento.data) {
+        try {
+            const d = new Date(agendamento.data);
+            const ano = d.getUTCFullYear();
+            const mes = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+            const dia = d.getUTCDate().toString().padStart(2, '0');
+            dataFormatada = `${ano}-${mes}-${dia}`; 
+        } catch (e) {
+            dataFormatada = null;
+        }
+    }
+
+    const conclusivo = (agendamento.foiConclusivo === 'Não' || agendamento.foiConclusivo === 'Nao') ? 'Não' : 'Sim';
+
     const answers = [
         { questionId: questionIds.estado, answer1: "Ceará - CE" },
         { questionId: questionIds.instituicao, answer1: "CE - UNIFOR - Fortaleza" },
-        { questionId: questionIds.data, answer1: formatarDataParaFormsMS(agendamento.data) },
-        { questionId: questionIds.modalidade, answer1: agendamento.modalidade },
-        { questionId: questionIds.tipoDePessoa, answer1: agendamento.tipoDePessoa },
-        { questionId: questionIds.foiConclusivo, answer1: agendamento.foiConclusivo },
-        { questionId: questionIds.tipoAtendimento, answer1: tipoServico }
+        { questionId: questionIds.data, answer1: dataFormatada },
+        { questionId: questionIds.modalidade, answer1: agendamento.modalidade || "Presencial" },
+        { questionId: questionIds.tipoDePessoa, answer1: agendamento.tipoDePessoa || "Pessoa Física" },
+        { questionId: questionIds.foiConclusivo, answer1: conclusivo },
+        { questionId: questionIds.tipoAtendimento, answer1: servicoTexto }
     ];
 
-    return answers;
+    return answers.filter(a => a.answer1 !== undefined);
 }
 
 export const enviarAgendamentosParaReceita = async (req, res) => {
@@ -44,123 +59,79 @@ export const enviarAgendamentosParaReceita = async (req, res) => {
             return res.status(200).json({ message: "Nenhum agendamento para enviar.", totalEnviado: 0 });
         }
 
-        const payloads = []; // { agendamentoId, answers }
+        const payloads = [];
         for (const ag of agendamentosCompletos) {
-            payloads.push({ agendamentoId: ag._id.toString(), answers: mapearAgendamentoParaPayload(ag, ag.tipoAgendamento) });
+            payloads.push({ 
+                agendamentoId: ag._id.toString(), 
+                answersArray: mapearAgendamentoParaPayload(ag, ag.tipoAgendamento) 
+            });
+            
             const extras = Array.isArray(ag.atendimentosComplementares) ? ag.atendimentosComplementares : [];
             for (const servico of extras) {
-                payloads.push({ agendamentoId: ag._id.toString(), answers: mapearAgendamentoParaPayload(ag, servico) });
+                payloads.push({ 
+                    agendamentoId: ag._id.toString(), 
+                    answersArray: mapearAgendamentoParaPayload(ag, servico) 
+                });
             }
         }
 
-        // (Formulário Teste) Alterar para o da Receita Federal no futuro
         const MS_FORMS_URL = "https://forms.guest.usercontent.microsoft/formapi/api/9188040d-6c67-4c5b-b112-36a304b66dad/users/00000000-0000-0000-0003-0000d5c168a7/forms('DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANXBaKdUMExNUUc4N1NaMjRYNklUQ0tSOFkyN1VUUi4u')/responses";
 
         let fetchImpl = global.fetch;
         if (typeof fetchImpl === 'undefined') {
-            try {
-                const mod = await import('node-fetch');
-                fetchImpl = mod.default;
-            } catch (e) {
-                console.error('Fetch não encontrado no runtime e não foi possível importar node-fetch.');
-                return res.status(500).json({ message: 'Fetch não disponível. Instale node-fetch ou atualize o Node.js para v18+' });
-            }
-        }
-
-        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-        const maxRetries = 3;
-        const successCountPerAg = {};
-        const totalCountPerAg = {};
-        for (const p of payloads) {
-            totalCountPerAg[p.agendamentoId] = (totalCountPerAg[p.agendamentoId] || 0) + 1;
+            try { const mod = await import('node-fetch'); fetchImpl = mod.default; } catch (e) { }
         }
 
         let successfulSends = 0;
+        
         for (const p of payloads) {
             const submitDate = new Date().toISOString();
             const startDate = new Date(Date.now() - 1000).toISOString();
-            const payload = {
+            
+            const payloadFinal = {
                 startDate,
                 submitDate,
-                answers: p.answers,
+                answers: JSON.stringify(p.answersArray),
                 emailReceiptConsent: false,
             };
+            
+            console.log("Enviando Payload:", JSON.stringify(payloadFinal).substring(0, 200) + "...");
 
-            const logDoc = new EnvioLog({
-                agendamentoId: p.agendamentoId,
-                payload,
-                attempts: [],
-                success: false,
-                sentBy: req.user?.username || 'system',
-            });
-            await logDoc.save();
+            try {
+                const resp = await fetchImpl(MS_FORMS_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36'
+                    },
+                    body: JSON.stringify(payloadFinal),
+                });
 
-            let attempt = 0;
-            let sent = false;
-            while (attempt < maxRetries && !sent) {
-                try {
-                    attempt++;
-                    const resp = await fetchImpl(MS_FORMS_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'User-Agent': 'NAF-Agent/1.0'
-                        },
-                        body: JSON.stringify(payload),
-                    });
-
-                    const status = resp.status;
-                    const text = await resp.text().catch(() => '');
-                    if (!resp.ok) {
-                        logDoc.attempts.push({ attemptNumber: attempt, success: false, statusCode: status, responseText: text, timestamp: new Date() });
-                        await logDoc.save();
-                        throw new Error(`Forms responded with ${status}: ${text}`);
-                    }
-
-                    sent = true;
-                    successfulSends++;
-                    successCountPerAg[p.agendamentoId] = (successCountPerAg[p.agendamentoId] || 0) + 1;
-                    logDoc.attempts.push({ attemptNumber: attempt, success: true, statusCode: status, responseText: text, timestamp: new Date() });
-                    logDoc.success = true;
-                    await logDoc.save();
-                } catch (err) {
-                    console.warn(`Falha ao enviar payload (attempt ${attempt}) para agendamento ${p.agendamentoId}:`, err.message || err);
-                    if (!logDoc.attempts.some(a => a.attemptNumber === attempt)) {
-                        logDoc.attempts.push({ attemptNumber: attempt, success: false, statusCode: null, responseText: err.message || String(err), timestamp: new Date() });
-                        await logDoc.save();
-                    }
-                    if (attempt < maxRetries) {
-                        await sleep(500 * attempt);
-                    }
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    console.error(`Erro Forms (${resp.status}): ${text}`);
+                    throw new Error(`Forms responded with ${resp.status}`);
                 }
+
+                successfulSends++;
+                
+                await Agendamento.findByIdAndUpdate(p.agendamentoId, { status: 'Enviado' });
+
+            } catch (err) {
+                console.error(`Falha no envio do agendamento ${p.agendamentoId}:`, err.message);
             }
-
-            if (!sent) {
-                console.error(`Não foi possível enviar payload para agendamento ${p.agendamentoId} após ${maxRetries} tentativas.`);
-            }
+            
+            await new Promise(r => setTimeout(r, 500)); 
         }
-
-        const idsParaAtualizar = Object.keys(totalCountPerAg).filter(id => successCountPerAg[id] === totalCountPerAg[id]);
-        if (idsParaAtualizar.length > 0) {
-            await Agendamento.updateMany(
-                { _id: { $in: idsParaAtualizar } },
-                { $set: { status: 'Enviado' } }
-            );
-        }
-
-        console.log(`Envios processados. Total payloads: ${payloads.length}, enviados com sucesso: ${successfulSends}`);
 
         res.status(200).json({ 
-            message: `Processado. ${successfulSends} envios bem-sucedidos de ${payloads.length} payloads.`,
-            totalEnvioTentados: payloads.length,
-            totalEnviosSucesso: successfulSends,
-            agendamentosAtualizados: idsParaAtualizar.length
+            message: `Processado. ${successfulSends} envios com sucesso.`,
+            totalEnviosSucesso: successfulSends
         });
 
     } catch (err) {
-        console.error("Erro ao enviar para a Receita:", err.message);
-        res.status(500).json({ message: "Erro interno do servidor ao enviar para a Receita" });
+        console.error("Erro geral:", err);
+        res.status(500).json({ message: "Erro interno no envio." });
     }
 };
 
@@ -172,35 +143,47 @@ export const enviarAgendamentoUnico = async (req, res) => {
         const agendamento = await Agendamento.findById(id);
 
         if (!agendamento) {
-        return res.status(404).json({ message: "Agendamento não encontrado." });
+            return res.status(404).json({ message: "Agendamento não encontrado." });
         }
 
         const payloads = [];
         payloads.push(mapearAgendamentoParaPayload(agendamento, agendamento.tipoAgendamento));
-        for (const servico of agendamento.atendimentosComplementares) {
-        payloads.push(mapearAgendamentoParaPayload(agendamento, servico));
+        
+        if (agendamento.atendimentosComplementares && agendamento.atendimentosComplementares.length > 0) {
+            for (const servico of agendamento.atendimentosComplementares) {
+                payloads.push(mapearAgendamentoParaPayload(agendamento, servico));
+            }
         }
 
         const MS_FORMS_URL = "https://forms.guest.usercontent.microsoft/formapi/api/9188040d-6c67-4c5b-b112-36a304b66dad/users/00000000-0000-0000-0003-0000d5c168a7/forms('DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANXBaKdUMExNUUc4N1NaMjRYNklUQ0tSOFkyN1VUUi4u')/responses";
 
-        await Promise.all(payloads.map(answersPayload => {
-        const submitDate = new Date().toISOString();
-        const startDate = new Date(Date.now() - 1000).toISOString();
-        const payload = {
-            startDate: startDate,
-            submitDate: submitDate,
-            answers: answersPayload,
-            emailReceiptConsent: false,
-        };
+        await Promise.all(payloads.map(async (answersPayload) => {
+            const submitDate = new Date().toISOString();
+            const startDate = new Date(Date.now() - 1000).toISOString();
+            
+            const payloadFinal = {
+                startDate: startDate,
+                submitDate: submitDate,
+                answers: JSON.stringify(answersPayload),
+                emailReceiptConsent: false,
+            };
 
-        return fetch(MS_FORMS_URL, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            },
-            body: JSON.stringify(payload),
-        });
+            const response = await fetch(MS_FORMS_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                },
+                body: JSON.stringify(payloadFinal),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Erro no envio individual: ${response.status} - ${errorText}`);
+                throw new Error(`Falha no Forms: ${response.status}`);
+            }
+            
+            return response;
         }));
 
         agendamento.status = 'Enviado';
@@ -209,12 +192,15 @@ export const enviarAgendamentoUnico = async (req, res) => {
         console.log(`Sucesso! Agendamento ${id} enviado (${payloads.length} registros).`);
 
         res.status(200).json({ 
-        message: `Sucesso! Agendamento enviado.`,
-        totalEnviado: payloads.length
+            message: `Sucesso! Agendamento enviado.`,
+            totalEnviado: payloads.length
         });
 
     } catch (err) {
         console.error("Erro ao enviar agendamento único:", err.message);
-        res.status(500).json({ message: "Erro interno ao enviar agendamento." });
+        res.status(500).json({ 
+            message: "Erro ao enviar para a Receita. Verifique se os dados estão corretos.",
+            details: err.message 
+        });
     }
 };

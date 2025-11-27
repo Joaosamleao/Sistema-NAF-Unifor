@@ -5,7 +5,7 @@ import { enviarAgendamentosParaReceita, enviarAgendamentoUnico } from '../Contro
 const router = express.Router();
 
 router.post('/enviarReceita', enviarAgendamentosParaReceita);
-router.post('/enviarUm/:id', enviarAgendamentoUnico);
+router.post('/enviarUm/:id', enviarAgendamentoUnico)
 
 router.use((req, res) => {
     res.status(404).json({

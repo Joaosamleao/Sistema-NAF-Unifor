@@ -68,8 +68,7 @@ function Navbar({ activeLink, setActiveLink }) {
                 alt="User profile"
                 />
 
-                <button onClick={() => setActiveLink && setActiveLink('Entrar')} className="text-sm text-gray-700 ml-4">Entrar</button>
-                <button onClick={() => setActiveLink && setActiveLink('Criar conta')} className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm">Criar conta</button>
+                <button onClick={() => setActiveLink && setActiveLink('Entrar')} className="text-sm text-gray-700 ml-4">Sair</button>
             </div>
             </div>
         </div>

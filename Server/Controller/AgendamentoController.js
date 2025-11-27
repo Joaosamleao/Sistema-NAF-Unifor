@@ -41,6 +41,12 @@ export const obterAgendamento = async(req, res) => {
 
 export const criarAgendamento = async(req, res) => {
     try {
+        await Agendamento.collection.dropIndex("usuarioId_1"); 
+        console.log("🔧 FIX: Índice fantasma 'usuarioId_1' removido com sucesso.");
+    } catch (error) {
+    }
+
+    try {
         const agendamento = new Agendamento(req.body);
         const newAgendamento = await agendamento.save();
         res.status(201).json(newAgendamento);

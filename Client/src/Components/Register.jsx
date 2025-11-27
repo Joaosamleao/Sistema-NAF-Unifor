@@ -11,17 +11,32 @@ export default function Register({ setActiveLink }) {
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (senha !== confirmSenha) {
-      setError('As senhas não coincidem')
-      return
+      setError('As senhas não coincidem');
+      return;
     }
 
-    // Simulação: mostrar tela de confirmação conforme imagens.
-    setSubmitted(true)
-  }
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, cpf, email, telefone, senha }),
+        });
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || 'Falha ao criar a conta');
+        }
+
+        setSubmitted(true); // ir para a tela de espera
+
+    } catch (err) {
+        setError(err.message);
+    }
+}
 
   if (submitted) {
     return (
