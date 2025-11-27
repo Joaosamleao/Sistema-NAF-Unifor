@@ -81,11 +81,11 @@ function Gerenciamento() {
     return (
         <div className="p-4 sm:p-6 lg:p-8">
             <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-                <User className="h-8 w-8 text-blue-600" />
+                <User className="h-8 w-8 text-sky-600" />
                 Gerenciamento de Colaboradores
             </h2>
             
-            <div className="bg-white shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="card-soft overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -95,12 +95,12 @@ function Gerenciamento() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-transparent divide-y divide-gray-200">
                         {colaboradores.map((colaborador) => {
                             const isCurrentUser = colaborador._id === currentUserId;
 
                             return (
-                                <tr key={colaborador._id} className={isCurrentUser ? "bg-blue-50" : ""}>
+                                <tr key={colaborador._id} className={isCurrentUser ? "bg-sky-50" : "hover:bg-gray-50 transition-colors duration-150"}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">{colaborador.nome} {isCurrentUser && "(Você)"}</div>
                                         <div className="text-sm text-gray-500">{colaborador.email}</div>
@@ -125,7 +125,7 @@ function Gerenciamento() {
                                             <select 
                                                 value={colaborador.cargo}
                                                 onChange={(e) => handleUpdateCargo(colaborador._id, e.target.value)}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm transition-colors duration-150 btn-animate"
                                             >
                                                 {CARGOS.map(cargo => (
                                                     <option key={cargo} value={cargo}>{cargo}</option>

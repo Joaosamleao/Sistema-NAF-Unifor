@@ -7,3 +7,27 @@
 .dark {
   color-scheme: dark;
 }
+
+/* Custom UI tokens and small animations (aesthetic only) */
+@layer utilities {
+  .fade-in { animation: fadeIn 350ms ease-out both; }
+  .slide-up { animation: slideUp 320ms cubic-bezier(.2,.8,.2,1) both; }
+  .btn-animate { transition: transform .18s ease, box-shadow .18s ease; }
+  .btn-animate:hover { transform: translateY(-3px); }
+  .card-soft { background: rgba(255,255,255,0.92); border-radius: .75rem; box-shadow: 0 6px 18px rgba(15,23,42,0.08); border: 1px solid rgba(203,213,225,0.5); }
+  .dark .card-soft { background: rgba(31,41,55,0.68); border: 1px solid rgba(63,63,70,0.28); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button gradients */
+.primary-gradient { background: linear-gradient(90deg,#0ea5e9,#7c3aed); color: white; }
+.secondary-gradient { background: linear-gradient(90deg,#06b6d4,#0ea5a6); color: white; }

@@ -277,21 +277,21 @@ function ReceitaFederal() {
                         <input
                             type="text"
                             placeholder="Buscar"
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 transition-shadow duration-150"
                         />
                     </div>
                     <button
                         type="button"
                         onClick={handleEnviarTudo}
                         disabled={isEnviando || agendamentosCompletos.length === 0}
-                        className="bg-[#265BCD] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="py-2 px-4 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed btn-animate primary-gradient"
                     >
                         {isEnviando ? 'Enviando...' : `Enviar ${totalEnvios} para a Receita`}
                     </button>
                 </div>
             </div>
 
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="overflow-hidden card-soft">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -303,9 +303,9 @@ function ReceitaFederal() {
                             <th scope="col" className="relative px-6 py-3"><span className="sr-only">Detalhes</span></th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-transparent divide-y divide-gray-200">
                         {agendamentosCompletos.map((agendamento) => (
-                            <tr key={agendamento._id}>
+                            <tr key={agendamento._id} className="hover:bg-gray-50 transition-colors duration-150 slide-up">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{agendamento.nome}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{agendamento.cpf}</td>
                                 <td className="px-6 py-4 whitespace-pre-wrap text-sm text-gray-900">{agendamento.email}</td>
