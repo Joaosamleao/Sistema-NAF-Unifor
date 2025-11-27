@@ -20,7 +20,6 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', AuthRoutes);
 
-// Protect API routes with JWT middleware
 app.use('/api/agendamentos', authMiddleware, AgendamentoRoutes);
 app.use('/api/receita', authMiddleware, ReceitaFederalRoutes);
 
