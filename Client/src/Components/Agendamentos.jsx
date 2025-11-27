@@ -522,9 +522,13 @@ function Agendamentos({ userRole }) {
         try {
             const token = localStorage.getItem('naf_token');
 
-            const headers = {
+            const headers = token ? {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            } : {
                 'Content-Type': 'application/json'
             };
+
             if (token) {
                 // formato padrão JWT: Authorization: Bearer <token>
                 headers['Authorization'] = `Bearer ${token}`;

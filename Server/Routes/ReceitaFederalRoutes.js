@@ -1,10 +1,11 @@
 import express from 'express';
 import { checkRole } from '../Middleware/authorization.js'; 
-import { enviarAgendamentosParaReceita } from '../Controller/ReceitaFederalController.js'
+import { enviarAgendamentosParaReceita, enviarAgendamentoUnico } from '../Controller/ReceitaFederalController.js'
 
 const router = express.Router();
 
 router.post('/enviarReceita', checkRole(['Administrador']), enviarAgendamentosParaReceita);
+router.post('/enviarUm/:id', enviarAgendamentoUnico)
 
 router.use((req, res) => {
     res.status(404).json({
